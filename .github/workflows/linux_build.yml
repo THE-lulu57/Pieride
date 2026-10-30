@@ -1,0 +1,77 @@
+name: Build Linux AppImage
+
+on:
+  push:
+    branches: [build_linux, main]
+  pull_request:
+    branches: [build_linux, main]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-22.04
+            rust_target: x86_64-unknown-linux-gnu
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            rust_target: aarch64-unknown-linux-gnu
+
+    runs-on: ${{ matrix.runner }}
+    name: Build ${{ matrix.arch }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl wget file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            rpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (deb, rpm, AppImage)
+        run: pnpm tauri build --target ${{ matrix.rust_target }}
+
+      - name: Upload artifact ${{ matrix.arch }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pieride-Linux-${{ matrix.arch }}
+          path: |
+            src-tauri/target/**/bundle/appimage/*.AppImage
+            src-tauri/target/**/bundle/deb/*.deb
+            src-tauri/target/**/bundle/rpm/*.rpm
+          if-no-files-found: error
