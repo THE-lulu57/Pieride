@@ -14,14 +14,15 @@
     "appDirectoriesOverride": "$CONFIG/Pieride",
     "windows": [
       {
+        "label": "main",
         "title": "Piéride",
         "width": 1280,
         "height": 720,
         "minWidth": 720,
         "decorations": false,
         "center": true,
-        "dragDropEnabled": false,
-        "visible": false
+        "visible": false,
+        "dragDropEnabled": false
       }
     ],
     "security": {

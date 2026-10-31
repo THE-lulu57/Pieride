@@ -40,7 +40,8 @@
     "running": "Synchronisation…",
     "failed": "Échec de la synchronisation",
     "done": "Synchronisé {{when}}",
-    "action": "Synchroniser"
+    "wait": "Réessaie {{when}}",
+    "hint": "{{keys}} pour synchroniser (au plus toutes les 5 minutes)"
   },
   "placeholder": {
     "title": "Bientôt ici",
@@ -77,7 +78,6 @@
     "placeholder": "Aller à une page, lancer une action…",
     "goto": "Aller à",
     "actions": "Actions",
-    "sync": "Synchroniser maintenant",
     "switchAccount": "Changer de compte",
     "empty": "Aucun résultat",
     "navigate": "naviguer",
@@ -737,7 +737,7 @@
       "shortcut": {
         "palette": "Palette de commandes",
         "sections": "Aller à une section",
-        "sync": "Synchroniser",
+        "sync": "Synchroniser (au plus toutes les 5 minutes)",
         "settings": "Paramètres",
         "close": "Fermer un panneau ou une fenêtre"
       }

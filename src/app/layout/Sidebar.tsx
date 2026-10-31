@@ -16,6 +16,7 @@ import type { Loaded } from "@/hooks/useLoaded";
 import { Source, useQuery } from "@/hooks/useQuery";
 import { MOD } from "@/lib/platform";
 import { type ModuleManifest, modulePath } from "@/modules/registry";
+import { MANUAL_SYNC_INTERVAL } from "@/services/account-manager";
 import { useAccountStore } from "@/stores/accounts";
 import { useSettingsStore } from "@/stores/settings";
 import { TOPICS, useSyncStore } from "@/stores/sync";
@@ -80,39 +81,62 @@ function AccountSwitcher({
   );
 }
 
-/** « Synchronisé il y a 2 minutes » ; un clic relance la synchronisation. */
+/** Le refus d'un `Ctrl R` reste affiché ce temps-là, puis l'état revient. */
+const REFUSED_NOTICE = 4000;
+
+/**
+ * « Synchronisé il y a 2 minutes ». Rien à cliquer : la synchro est automatique, et `Ctrl R`
+ * la relance au plus toutes les 5 minutes (« Réessaie dans 3 minutes » sinon).
+ */
 function SyncStatus({ account }: { account: AccountSummary | undefined }) {
   const { t, i18n } = useTranslation();
   const lastSync = useLastSync(account?.id);
   const syncing = useSyncStore(state => state.syncing);
   const failed = useSyncStore(state => state.failed);
-  const sync = useSyncStore(state => state.sync);
+  const manualAt = useSyncStore(state => state.manualAt);
+  const refusedAt = useSyncStore(state => state.refusedAt);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(timer);
   }, []);
+  useEffect(() => {
+    if (refusedAt === null) {
+      return;
+    }
+    const timer = setTimeout(
+      () => setNow(Date.now()),
+      refusedAt + REFUSED_NOTICE - Date.now()
+    );
+    return () => clearTimeout(timer);
+  }, [refusedAt]);
 
+  const relative = new Intl.RelativeTimeFormat(i18n.language, {
+    numeric: "auto",
+  });
   let label = t("sync.never");
   if (syncing) {
     label = t("sync.running");
+  } else if (
+    manualAt !== null &&
+    refusedAt !== null &&
+    now < refusedAt + REFUSED_NOTICE
+  ) {
+    const minutes = Math.ceil(
+      (manualAt + MANUAL_SYNC_INTERVAL - refusedAt) / 60_000
+    );
+    label = t("sync.wait", { when: relative.format(minutes, "minute") });
   } else if (failed || lastSync.status === "error") {
     label = t("sync.failed");
   } else if (lastSync.status === "ready" && lastSync.data) {
     const minutes = Math.round((lastSync.data.getTime() - now) / 60_000);
-    const when = new Intl.RelativeTimeFormat(i18n.language, {
-      numeric: "auto",
-    }).format(minutes, "minute");
-    label = t("sync.done", { when });
+    label = t("sync.done", { when: relative.format(minutes, "minute") });
   }
 
   return (
-    <button
-      type="button"
-      className={styles.item}
-      disabled={!account || syncing}
-      title={t("sync.action")}
-      onClick={() => account && void sync(account.id)}
+    <p
+      className={`${styles.item} ${styles.status}`}
+      title={t("sync.hint", { keys: `${MOD} R` })}
     >
       {syncing ? (
         <span className={styles.syncSpinner}>
@@ -122,7 +146,7 @@ function SyncStatus({ account }: { account: AccountSummary | undefined }) {
         <Check size={20} className={styles.syncIcon} />
       )}
       <span className={styles.label}>{label}</span>
-    </button>
+    </p>
   );
 }
 
