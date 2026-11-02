@@ -39,12 +39,11 @@ jobs:
             flatpak \
             flatpak-builder \
             elfutils
-            # --- ANCIEN DEPS POUR RPM - CONSERVÉ ---
-            # rpm
 
-          flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.freedesktop.Sdk.Extension.rust-stable//24.08 || true
-
+          # FIX: --user obligatoire sur GitHub Actions
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.freedesktop.Sdk.Extension.rust-stable//24.08
+          
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
