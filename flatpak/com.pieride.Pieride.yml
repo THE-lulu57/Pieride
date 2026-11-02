@@ -1,0 +1,30 @@
+id: com.pieride.Pieride
+runtime: org.gnome.Platform
+runtime-version: '47'
+sdk: org.gnome.Sdk
+command: pieride   # à remplacer par le vrai nom du binaire
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --share=ipc
+  - --share=network   # retire-le si l'app n'utilise pas Internet
+
+modules:
+  - name: pieride
+    buildsystem: simple
+    sources:
+      - type: file
+        path: pieride.deb
+    build-commands:
+      - ar -x pieride.deb
+      - tar -xf data.tar.gz
+      - install -Dm755 usr/bin/pieride /app/bin/pieride
+      - install -Dm644 usr/share/applications/*.desktop /app/share/applications/com.pieride.Pieride.desktop
+      - sed -i 's/^Icon=.*/Icon=com.pieride.Pieride/' /app/share/applications/com.pieride.Pieride.desktop
+      - |
+        for f in usr/share/icons/hicolor/*/apps/*.png; do
+          d=$(dirname "$f")
+          install -Dm644 "$f" "/app/share/icons/hicolor/${d#usr/share/icons/hicolor/}/com.pieride.Pieride.png"
+        done
