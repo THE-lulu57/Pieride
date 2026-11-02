@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Pieride
+Exec=pieride
+Icon=com.pieride.Pieride
+Type=Application
+Terminal=false
+Categories=Utility;
+StartupWMClass=Pieride
