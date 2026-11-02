@@ -1,4 +1,4 @@
-name: Build Linux (deb, flatpak)
+name: Build Linux (flatpak)
 
 on:
   workflow_dispatch:
@@ -66,10 +66,10 @@ jobs:
       - name: Install frontend deps
         run: pnpm install --frozen-lockfile
 
-      - name: Build (deb)
-        run: |
+      #- name: Build (deb)
+        #run: |
           # BUILD ACTIF: que du deb pour l'instant
-          pnpm tauri build --target ${{ matrix.rust_target }} --bundles deb
+          #pnpm tauri build --target ${{ matrix.rust_target }} --bundles deb
 
           # --- ANCIEN BUILD COMPLET (deb, rpm, AppImage) - CONSERVÉ ---
           # pnpm tauri build --target ${{ matrix.rust_target }}
