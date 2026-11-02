@@ -1,0 +1,23 @@
+app-id: com.pieride.Pieride
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: pieride
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --share=network
+  - --filesystem=home
+  - --device=dri
+  - --socket=pulseaudio
+modules:
+  - name: pieride
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 src-tauri/target/x86_64-unknown-linux-gnu/release/pieride /app/bin/pieride || install -Dm755 src-tauri/target/release/pieride /app/bin/pieride
+      - install -Dm644 flatpak/com.pieride.Pieride.desktop /app/share/applications/com.pieride.Pieride.desktop
+      - install -Dm644 flatpak/com.pieride.Pieride.metainfo.xml /app/share/metainfo/com.pieride.Pieride.metainfo.xml
+    sources:
+      - type: dir
+        path: ..
