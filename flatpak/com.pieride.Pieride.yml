@@ -1,0 +1,32 @@
+app-id: com.pieride.Pieride
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: pieride
+
+finish-args:
+    - --share=ipc
+    - --socket=fallback-x11
+    - --socket=wayland
+    - --share=network
+    - --filesystem=home
+    - --device=dri
+    - --socket=pulseaudio
+
+modules:
+    - name: pieride
+    buildsystem: simple
+    build-commands:
+            - |
+        # On récupère le binaire déjà build par Tauri (x86_64 ou aarch64)
+        BIN=$(find src-tauri/target -type f -executable -path "*/release/pieride" | head -n1)
+        if [ -z "$BIN" ]; then BIN=$(find src-tauri/target -type f -executable -name "Pieride" | head -n1); fi
+        echo "Using binary: $BIN"
+        install -Dm755 "$BIN" /app/bin/pieride
+            - install -Dm644 flatpak/com.pieride.Pieride.desktop /app/share/applications/com.pieride.Pieride.desktop
+            - install -Dm644 flatpak/com.pieride.Pieride.metainfo.xml /app/share/metainfo/com.pieride.Pieride.metainfo.xml
+            - install -Dm644 src-tauri/icons/128x128.png /app/share/icons/hicolor/128x128/apps/com.pieride.Pieride.png || install -Dm644 src-tauri/icons/icon.png /app/share/icons/hicolor/512x512/apps/com.pieride.Pieride.png || true
+    sources:
+            - type: dir
+        path: ../
+        skip: [".git", "node_modules", "src-tauri/target/debug", "flatpak-builder-cache", "repo", "build-dir"]
