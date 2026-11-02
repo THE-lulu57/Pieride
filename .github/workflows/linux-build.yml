@@ -28,21 +28,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            build-essential \
-            curl wget file \
-            libxdo-dev \
-            libssl-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            flatpak \
-            flatpak-builder \
-            elfutils
-
-          # FIX: --user obligatoire sur GitHub Actions
+            libwebkit2gtk-4.1-dev build-essential curl wget file \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev \
+            librsvg2-dev patchelf flatpak flatpak-builder elfutils
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.freedesktop.Sdk.Extension.rust-stable//24.08
+          flatpak install --user -y flathub org.gnome.Platform//47 org.gnome.Sdk//47
           
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -66,17 +56,15 @@ jobs:
       - name: Install frontend deps
         run: pnpm install --frozen-lockfile
 
-      #- name: Build (deb)
-        #run: |
-          # BUILD ACTIF: que du deb pour l'instant
-          #pnpm tauri build --target ${{ matrix.rust_target }} --bundles deb
-
-          # --- ANCIEN BUILD COMPLET (deb, rpm, AppImage) - CONSERVÉ ---
-          # pnpm tauri build --target ${{ matrix.rust_target }}
+      - name: Build (deb)
+        run: |
+          pnpm tauri build --target ${{ matrix.rust_target }} --bundles deb
+          cp src-tauri/target/${{ matrix.rust_target }}/release/bundle/deb/*.deb flatpak/pieride.deb
+          dpkg -c flatpak/pieride.deb
 
       - name: Build Flatpak
         run: |
-          flatpak-builder --force-clean --ccache --repo=repo build-dir flatpak/com.pieride.Pieride.yml
+          flatpak-builder --user --force-clean --repo=repo build-dir flatpak/com.pieride.Pieride.yml
           flatpak build-bundle repo Pieride-${{ matrix.arch }}.flatpak com.pieride.Pieride --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo
 
       - name: Upload artifact ${{ matrix.arch }}
