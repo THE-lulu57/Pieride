@@ -1,6 +1,12 @@
 // Le cadre de la fenêtre (UX §3) : barre latérale, boutons de la fenêtre, page du module affiché,
 // panneau détail, palette de commandes et Paramètres.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Routes, useLocation } from "react-router";
 
@@ -9,6 +15,7 @@ import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { ErrorBoundary } from "@/components/ErrorBoundary/ErrorBoundary";
 import { Page } from "@/components/Page/Page";
 import type { AccountSummary } from "@/hooks/useAccounts";
+import { useAutoUpdate } from "@/hooks/useAutoUpdate";
 import type { Loaded } from "@/hooks/useLoaded";
 import { useShortcuts } from "@/hooks/useShortcuts";
 import { useTrayGlance } from "@/hooks/useTrayGlance";
@@ -26,6 +33,7 @@ import { DetailPanel } from "./DetailPanel";
 import styles from "./layout.module.scss";
 import { NotFound } from "./NotFound";
 import { Sidebar } from "./Sidebar";
+import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowControls } from "./WindowControls";
 
 export function Layout({ accounts }: { accounts: Loaded<AccountSummary[]> }) {
@@ -34,6 +42,7 @@ export function Layout({ accounts }: { accounts: Loaded<AccountSummary[]> }) {
   const detailOpen = useDetailStore(state => state.content !== null);
   const closeDetail = useDetailStore(state => state.close);
   const { pathname } = useLocation();
+  useAutoUpdate();
   const [paletteOpen, setPaletteOpen] = useState(false);
   // Ouverts sur la page en cours : changer de page (raccourci, palette) les ferme.
   const settingsAt = useSettingsDialog(state => state.openAt);
@@ -84,7 +93,11 @@ export function Layout({ accounts }: { accounts: Loaded<AccountSummary[]> }) {
     }
   }, [currentAccountId, syncNow]);
   // Le détail appartient à la page et au compte affichés : il se ferme quand ils changent.
-  useEffect(() => closeDetail(), [pathname, currentAccountId, closeDetail]);
+  // Avant les effets de la nouvelle page, qui peut en ouvrir un tout de suite (palette, `useJump`).
+  useLayoutEffect(
+    () => closeDetail(),
+    [pathname, currentAccountId, closeDetail]
+  );
 
   useTrayGlance(currentAccountId);
 
@@ -150,6 +163,7 @@ export function Layout({ accounts }: { accounts: Loaded<AccountSummary[]> }) {
         modules={modules}
         accounts={list}
         current={current}
+        onSync={syncManually}
         onSettings={openSettings}
       />
       <Settings
@@ -160,6 +174,7 @@ export function Layout({ accounts }: { accounts: Loaded<AccountSummary[]> }) {
         account={current}
         accounts={list}
       />
+      <WhatsNewDialog />
     </div>
   );
 }

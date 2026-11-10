@@ -7,6 +7,8 @@ fn main() {
             "pronote_login",
             "show_app",
             "is_minimized",
+            "can_self_update",
+            "restart_app",
             "secret_get",
             "secret_set",
             "secret_delete",
@@ -14,6 +16,8 @@ fn main() {
             "db_execute",
             "db_batch",
             "db_apply_migration",
+            "attachment_open",
+            "attachments_forget",
         ]),
     ))
     .expect("failed to run tauri-build");

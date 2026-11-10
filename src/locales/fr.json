@@ -1,13 +1,17 @@
 {
   "app": {
-    "loading": "Chargement…"
+    "loading": "Chargement…",
+    "close": "Fermer Piéride",
+    "retry": "Réessayer"
   },
   "errors": {
-    "database": "Impossible d'ouvrir tes données. Redémarre Piéride, et si ça continue, signale-le.",
+    "database": "Impossible d'ouvrir tes données. Redémarre Piéride. Si cette erreur persiste, signale-la.",
     "AuthenticationError": "Reconnecte-toi à ce service.",
     "ServiceUnavailable": "Service injoignable pour l'instant : tu vois les dernières données enregistrées.",
     "SecurityChallenge": "Ce service demande une vérification.",
     "Unknown": "Une erreur inattendue est survenue.",
+    "startError": "Une erreur inattendue est survenue et Piéride n'a pas pu démarrer. Redémarre Piéride. Si cette erreur persiste, signale-la.",
+    "crashed": "Une erreur inattendue est survenue et Piéride a planté. Redémarre Piéride. Si cette erreur persiste, signale-la.",
     "keyring_unavailable": "Le trousseau de ton système est inaccessible : impossible d'enregistrer tes identifiants.",
     "UnsupportedService": "Ce service n'est pas encore pris en charge par Piéride.",
     "instance": {
@@ -75,14 +79,20 @@
   "palette": {
     "label": "Palette de commandes",
     "search": "Rechercher",
-    "placeholder": "Aller à une page, lancer une action…",
+    "placeholder": "Chercher une tâche, une note, un cours…",
     "goto": "Aller à",
     "actions": "Actions",
     "switchAccount": "Changer de compte",
     "empty": "Aucun résultat",
     "navigate": "naviguer",
     "open": "ouvrir",
-    "close": "fermer"
+    "close": "fermer",
+    "sync": "Synchroniser maintenant",
+    "openHint": "Ouvrir",
+    "loading": "Recherche dans tes données…",
+    "unavailable": "Tes données n'ont pas pu être lues.",
+    "dueNear": "pour {{day}}",
+    "dueDate": "pour le {{date}}"
   },
   "keys": {
     "escape": "Échap",
@@ -174,7 +184,18 @@
   },
   "attachmentList": {
     "file": "Fichier",
-    "link": "Lien"
+    "link": "Lien",
+    "opening": "Ouverture…",
+    "confirmTitle": "Ouvrir ce lien ?",
+    "confirmText": "Il mène vers {{site}}, qui s'ouvrira dans ton navigateur. Ouvre-le seulement si tu fais confiance à ce site.",
+    "confirm": "Ouvrir le lien",
+    "errors": {
+      "download": "Le fichier n'a pas pu être téléchargé. Vérifie ta connexion, synchronise, puis réessaie.",
+      "link": "Ce lien ne peut pas s'ouvrir depuis Piéride.",
+      "type_refused": "Ce type de fichier ne s'ouvre pas depuis Piéride, pour ta sécurité. Récupère-le sur le site de ton établissement.",
+      "too_large": "Ce fichier est trop lourd pour être ouvert depuis Piéride.",
+      "open_failed": "Aucune app de ton ordinateur ne sait ouvrir ce fichier."
+    }
   },
   "cours": {
     "view": "Affichage",
@@ -403,7 +424,16 @@
     "untitled": "Sans titre",
     "hasAttachments": "Pièces jointes",
     "noMatch": "Aucune actualité ne correspond.",
-    "publishedAt": "{{date}} à {{time}}"
+    "publishedAt": "{{date}} à {{time}}",
+    "survey": "Ce sondage se remplit sur {{service}}.",
+    "acknowledgement": {
+      "title": "Accusé de réception demandé",
+      "text": "Ton établissement te demande de confirmer que tu as lu cette actualité.",
+      "action": "J'en ai pris connaissance",
+      "failed": "L'accusé de réception n'est pas parti. Vérifie ta connexion et réessaie.",
+      "done": "Accusé de réception envoyé",
+      "doneText": "Ton établissement sait que tu as pris connaissance de cette actualité."
+    }
   },
   "assiduite": {
     "year": "Toute l'année",
@@ -621,6 +651,10 @@
       "quietDuringClasses": {
         "title": "Silencieux pendant les cours",
         "text": "Les notifications attendent la fin du cours"
+      },
+      "autoUpdate": {
+        "title": "Rechercher les mises à jour automatiquement",
+        "text": "Au lancement, puis toutes les 6 heures. Rien ne s'installe sans ton accord"
       }
     },
     "features": {
@@ -730,7 +764,6 @@
       "autostartFailed": "Le lancement au démarrage n'a pas pu être réglé sur ce système.",
       "updates": "Mises à jour",
       "version": "Piéride {{version}}",
-      "updatesText": "Les mises à jour automatiques arrivent avec la version 1.0.",
       "releases": "Voir les versions",
       "shortcuts": "Raccourcis clavier",
       "to": "à",
@@ -740,7 +773,18 @@
         "sync": "Synchroniser (au plus toutes les 5 minutes)",
         "settings": "Paramètres",
         "close": "Fermer un panneau ou une fenêtre"
-      }
+      },
+      "notChecked": "Pas encore vérifié",
+      "checking": "Recherche en cours…",
+      "upToDate": "À jour · vérifié à {{time}}",
+      "available": "La version {{version}} est disponible",
+      "availableManual": "La version {{version}} est disponible. Installe-la avec le paquet de la page des versions",
+      "downloading": "Téléchargement… {{percent}}",
+      "ready": "La version {{version}} est installée. Redémarre pour l'utiliser",
+      "updateFailed": "La mise à jour n'a pas pu aboutir. Vérifie ta connexion puis réessaie",
+      "check": "Rechercher des mises à jour",
+      "install": "Installer",
+      "restart": "Redémarrer"
     },
     "notifications": {
       "sampleFrom": "Piéride · maintenant",
@@ -909,9 +953,9 @@
       "demoWarn": "Avertissement",
       "demoWarnText": "Tu t'apprêtes à utiliser le compte de démonstration PRONOTE. Ce compte ne contiendra pas tes données scolaires.",
       "demoWarnText2": "Si tu souhaites avoir tes données scolaires, reviens en arrière et choisis l'une des deux autres options.",
-      "demoWarnText3": "L'instance de démonstration n'enregistre pas les modifications, en conséquence si tu re-synchronises, les données reviendront à leurs valeur d'origine.",
+      "demoWarnText3": "L'instance de démonstration n'enregistre pas les modifications : à chaque synchro, les données reviennent à leurs valeurs d'origine.",
       "demoOrigin": "Le compte de démonstration provient de l'instance de démonstration publique de PRONOTE.",
-      "demoContinue": "Cliques sur \"Continuer\" pour te connecter au compte de démonstration.",
+      "demoContinue": "Clique sur « Continuer » pour te connecter au compte de démonstration.",
       "loginEyebrow": "Connexion",
       "loginTitle": "Connecte-toi à {{name}}",
       "loginText": "La page de connexion de ton établissement, ou de ton ENT, s'ouvre dans une fenêtre à part. Connecte-toi comme d'habitude.",
@@ -944,9 +988,17 @@
         "ServiceUnavailable": "PRONOTE ne répond pas pour l'instant. Réessaie dans un instant.",
         "SecurityChallenge": "PRONOTE demande une vérification que Piéride ne sait pas encore faire.",
         "LoginBlocked": "PRONOTE te demande de changer ton mot de passe ou de choisir ta double authentification. Fais-le d'abord sur le site de PRONOTE, puis reviens ici.",
-        "WrongPin": "Ce code PIN n'est pas le bon."
+        "WrongPin": "Ce code PIN n'est pas le bon.",
+        "AlreadyLinked": "Ce compte est déjà dans Piéride. Choisis-le en haut de la barre latérale."
       }
     }
+  },
+  "whatsNew": {
+    "title": "Nouveautés de la version {{version}}",
+    "subtitle": "Découvre les dernières améliorations et corrections de bugs.",
+    "version": "Version {{version}}",
+    "since": "Disponible depuis le {{date}}",
+    "confirm": "C'est parti !"
   },
   "dialog": {
     "cancel": "Annuler",

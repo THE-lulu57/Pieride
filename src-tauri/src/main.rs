@@ -1,6 +1,7 @@
 // Évite d'ouvrir une console en plus sous Windows en release, ne pas retirer.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod attachments;
 mod database;
 mod pronote_login;
 mod secrets;
@@ -63,6 +64,19 @@ fn is_minimized() -> bool {
     std::env::args().any(|arg| arg == MINIMIZED)
 }
 
+/// Vrai si Piéride peut se remplacer elle-même. Sur Linux, seul l'AppImage le peut : un paquet
+/// .deb ou .rpm ne se met à jour que par le système (variable posée par le lanceur AppImage).
+#[tauri::command]
+fn can_self_update() -> bool {
+    !cfg!(target_os = "linux") || std::env::var_os("APPIMAGE").is_some()
+}
+
+/// Relance l'app, après l'installation d'une mise à jour.
+#[tauri::command]
+fn restart_app(app: AppHandle) {
+    app.restart();
+}
+
 /// Origine d'une URL HTTPS vers un nom de domaine public. Les erreurs sont des codes,
 /// qui ne recopient jamais l'URL : elle peut contenir un jeton.
 fn instance_origin(url: &str) -> Result<String, &'static str> {
@@ -116,12 +130,14 @@ fn main() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             Some(vec![MINIMIZED]),
         ))
         .manage(AllowedInstances::default())
         .setup(|app| {
+            attachments::clear(app.handle());
             // Sans base, l'app s'ouvre quand même : le front affiche l'erreur (commandes `db_*` en échec).
             match tauri::async_runtime::block_on(database::open(app.handle())) {
                 Ok(database) => {
@@ -137,13 +153,17 @@ fn main() {
             pronote_login::pronote_login,
             show_app,
             is_minimized,
+            can_self_update,
+            restart_app,
             secrets::secret_get,
             secrets::secret_set,
             secrets::secret_delete,
             database::db_select,
             database::db_execute,
             database::db_batch,
-            database::db_apply_migration
+            database::db_apply_migration,
+            attachments::attachment_open,
+            attachments::attachments_forget
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

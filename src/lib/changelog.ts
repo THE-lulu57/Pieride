@@ -1,12 +1,14 @@
-// Notes de version : un fichier Markdown par version dans `changelog/`, à la racine du dépôt,
+// Notes de version : un fichier Markdown par version dans `.github/changelog/`,
 // lu au build. Une nouvelle version = un nouveau fichier, sans code à toucher. Le dossier
 // n'existe pas encore : il arrivera avec la première version publiée.
 // Repris du site de StewardPad (même auteur).
 //
-// Format : `changelog/0.2.0.md` en français (la référence), `changelog/en/0.2.0.md` pour sa
-// traduction. Un en-tête `version`, `date` (AAAA-MM-JJ) et `title` entre deux lignes `---`,
-// puis des sections `### Ajouts`, `### Changements`, `### Corrections`. Seuls les titres,
-// listes `- `, paragraphes, `**gras**` et `` `code` `` sont lus.
+// Format : `0.2.0.md` en français (la référence), `en/0.2.0.md` pour sa traduction.
+// Un en-tête `version`, `date` (AAAA-MM-JJ) et `title` entre deux lignes `---`, puis les notes :
+// une intro, puis `### ✨ Nouveautés`, `### 🛠️ Changements`, `### 🐛 Corrections` dans cet ordre
+// (`### ✨ New`, `### 🛠️ Changed`, `### 🐛 Fixed` en anglais), 3800 caractères au plus. Le même
+// texte sert à la release GitHub et à l'annonce Discord. Seuls les titres, listes `- `,
+// paragraphes, `**gras**` et `` `code` `` sont lus.
 import type { Language } from "@/stores/settings";
 
 /** Une version, telle que l'écrit son fichier. */
@@ -167,10 +169,11 @@ export function parseInline(
     );
 }
 
-// Tous les fichiers de `changelog/`, embarqués dans l'app. À la racine : le français ; dans
-// `en/` : leur traduction.
+// Tous les fichiers de `.github/changelog/`, embarqués dans l'app (chemin depuis la racine du
+// projet : Vite ne trouve pas un dossier caché par un chemin relatif). À la racine : le français ;
+// dans `en/` : leur traduction.
 export const CHANGELOG_FILES = import.meta.glob<string>(
-  "../../changelog/**/*.md",
+  "/.github/changelog/**/*.md",
   {
     query: "?raw",
     import: "default",
